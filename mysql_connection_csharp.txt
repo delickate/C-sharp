@@ -1,0 +1,23 @@
+HOW TO ADD MYSQL C#.Net
+==========================
+
+> Install-Package MySql.Data -Version 6.8.8
+
+HOW TO USE IT IN FILE
+====================
+
+using MySql.Data.MySqlClient;
+using System.Configuration;
+
+MYSQL DATABASE CONNECTION C#
+===========================
+
+string connectionString = ConfigurationManager.ConnectionStrings["MySQLConnection"].ConnectionString;
+
+MySqlConnection con = new MySqlConnection(connectionString);
+
+con.open();
+
+con.close();
+
+"C-Sharp connection" 
