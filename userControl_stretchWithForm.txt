@@ -1,0 +1,4 @@
+ private void ctrl_dashboard_Load(object sender, EventArgs e)
+        {
+            this.Dock = DockStyle.Fill;
+        }
