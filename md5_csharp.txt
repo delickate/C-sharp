@@ -1,0 +1,8 @@
+public string MD5PHP(string text)
+        {
+            string testString = text;
+            byte[] asciiBytes = ASCIIEncoding.ASCII.GetBytes(testString);
+            byte[] hashedBytes = System.Security.Cryptography.MD5CryptoServiceProvider.Create().ComputeHash(asciiBytes);
+            string hashedString = BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+            return hashedString;
+        }
