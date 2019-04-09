@@ -1,0 +1,34 @@
+ ToolStripMenuItem[] parent_navigation = new ToolStripMenuItem[4];
+
+            for (int i = 0; i < 4; i++)
+            {
+                parent_navigation[i] = new ToolStripMenuItem("Menu " + (i + 1));
+                parent_navigation[i].Name = "Sani "+i.ToString();
+                parent_navigation[i].Tag = "box " + i.ToString();
+                parent_navigation[i].Text = "Hyne " + i.ToString();
+               // parent_navigation[i].Click += new EventHandler(MenuItemClickHandler);
+            }
+
+            MenuStrip navigation = new MenuStrip();
+            navigation.Items.AddRange(parent_navigation);
+
+
+            //////////// sub item
+            ToolStripMenuItem[] subitems = new ToolStripMenuItem[5];
+            for (int i = 0; i < 5; i++)
+            {
+                subitems[i] = new ToolStripMenuItem();
+                subitems[i].Name = "Sani " + i.ToString();
+                subitems[i].Tag = "Sani " + i.ToString();
+                subitems[i].Text = "Sani " + i.ToString();
+                //subitems[i].Click += new EventHandler(Sub_MenuItemClickHandler);
+            }
+
+            parent_navigation[0].DropDownItems.AddRange(subitems);
+            //////////////////////
+
+            
+
+
+            //////////////////// SANI: END TOP NAVIGATION ////////////////////
+            parent.Controls.Add(navigation);
