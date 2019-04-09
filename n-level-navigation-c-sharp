@@ -1,0 +1,52 @@
+//////////////////// SANI: TOP NAVIGATION ////////////////////
+
+            ToolStripMenuItem[] parent_navigation = new ToolStripMenuItem[4];
+
+            for (int i = 0; i < 4; i++)
+            {
+                parent_navigation[i] = new ToolStripMenuItem("Menu " + (i + 1));
+                parent_navigation[i].Name = "Sani "+i.ToString();
+                parent_navigation[i].Tag = "box " + i.ToString();
+                parent_navigation[i].Text = "Hyne " + i.ToString();
+                // parent_navigation[i].Click += new EventHandler(MenuItemClickHandler);
+
+                //////////// sub item
+                ToolStripMenuItem[] subitems = new ToolStripMenuItem[5];
+                for (int j = 0; j < 5; j++)
+                {
+                    subitems[j] = new ToolStripMenuItem();
+                    subitems[j].Name = "Sani " + j.ToString();
+                    subitems[j].Tag = "Sani " + j.ToString();
+                    subitems[j].Text = "Sani " + j.ToString();
+                    //subitems[i].Click += new EventHandler(Sub_MenuItemClickHandler);
+
+                    //////////// sub sub item
+                    ToolStripMenuItem[] subsubitems = new ToolStripMenuItem[2];
+                    for (int z = 0; z < 2; z++)
+                    {
+                        subsubitems[z] = new ToolStripMenuItem();
+                        subsubitems[z].Name = "Sani " + z.ToString();
+                        subsubitems[z].Tag = "Sani " + z.ToString();
+                        subsubitems[z].Text = "Sani " + z.ToString();
+                        //subitems[i].Click += new EventHandler(Sub_MenuItemClickHandler);
+                    }
+
+                    subitems[j].DropDownItems.AddRange(subsubitems);
+                    //////////////////////
+                }
+
+                parent_navigation[i].DropDownItems.AddRange(subitems);
+                //////////////////////
+            }
+
+            MenuStrip navigation = new MenuStrip();
+            navigation.Items.AddRange(parent_navigation);
+
+
+            
+
+            
+
+
+            //////////////////// SANI: END TOP NAVIGATION ////////////////////
+            parent.Controls.Add(navigation);
