@@ -1,0 +1,176 @@
+Step 1: Create database table
+=============================
+CREATE TABLE IF NOT EXISTS `tbl_rights` (
+  `rit_id` int(11) NOT NULL AUTO_INCREMENT,
+  `rit_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rit_is_mandatory` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`rit_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+Step 2: Create window form and add 1 gridview & textbox with lable for all fields you want to use in crud. Also add three buttons
+        Insert, update, delete.
+        
+Step 3: Open class code view and import database library
+==========================================================
+        using MySql.Data.MySqlClient; OR using MySql.Data.SqlClient;
+        
+Step 4: Create variable to use in this class
+=============================================
+        Connection con;
+        MySqlCommand cmd;
+        int primaryKey;
+
+Step 5: Create instance in constructor
+======================================
+        this.Dock = DockStyle.Fill; //SANI: Stretch usercontrol to the size of window form
+        this.primaryKey = 0;        //SANI: Initialize variable
+        con = new Connection();     //SANI: create object of class
+        this.DisplayData();         //SANI: Load data in gridview 
+            
+Step 6: Load gridview width data. 
+==================================
+        private void DisplayData()
+        {
+            try
+            {
+                string query = "SELECT * FROM tbl_rights WHERE rit_is_mandatory = 0 ";
+                con.pupulate_grid(query, drv_rights);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                this.con.mysqlCon.Close();
+            }
+        }
+        
+Step 7: Should have function to clear form data
+================================================
+        private void ClearData()
+        {
+            tb_rights_name.Text = "";
+            this.primaryKey = 0;
+        }
+        
+Step 8: Insert record on insert button click
+=============================================
+        private void btn_insert_Click(object sender, EventArgs e)
+        {
+            try
+            {
+
+            
+                if (tb_rights_name.Text != "")
+                {
+                    cmd = new MySqlCommand("insert into tbl_rights(rit_name) values(@name)", con.mysqlCon);
+                    con.mysqlCon.Open();
+                    cmd.Parameters.AddWithValue("@name", tb_rights_name.Text);
+                    cmd.ExecuteNonQuery();
+                    con.mysqlCon.Close();
+                    MessageBox.Show("Record Inserted Successfully");
+                    DisplayData();
+                    ClearData();
+                }
+                else
+                {
+                    MessageBox.Show("Please Provide Details!");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                this.con.mysqlCon.Close();
+            }
+        }
+        
+        
+Step 9: Update record on update button click
+        private void btn_update_Click(object sender, EventArgs e)
+        {
+            try
+            { 
+                if (tb_rights_name.Text != "")
+                {
+                    cmd = new MySqlCommand("UPDATE tbl_rights SET rit_name = @name WHERE rit_id = " + this.primaryKey + " ", con.mysqlCon);
+                    con.mysqlCon.Open();
+                    cmd.Parameters.AddWithValue("@name", tb_rights_name.Text);
+                    cmd.ExecuteNonQuery();
+                    MessageBox.Show("Record Updated Successfully");
+                    con.mysqlCon.Close();
+                    DisplayData();
+                    this.ClearData();
+                } else{
+                            MessageBox.Show("Please Select Record to Update");
+                      }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                this.con.mysqlCon.Close();
+            }
+        }
+        
+        
+ Step 10: Delete record on delete button click
+ 
+        private void btn_delete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+
+                if (this.primaryKey != 0)
+                {
+                    cmd = new MySqlCommand("delete from tbl_rights where rit_id='" + this.primaryKey + "' ", con.mysqlCon);
+                    con.mysqlCon.Open();
+                    //cmd.Parameters.AddWithValue("@rol_id", this.primaryKey);
+                    cmd.ExecuteNonQuery();
+                    con.mysqlCon.Close();
+                    MessageBox.Show("Record Deleted Successfully!");
+                    DisplayData();
+                    ClearData();
+                }
+                else
+                {
+                    MessageBox.Show("Please Select Record to Delete");
+                }
+            } catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        this.con.mysqlCon.Close();
+                    }
+        }
+        
+Step 11: Do do update/delete you must select any row in grid view. To get selected row programatically. Do this
+         private void drv_rights_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int selectedrowindex = drv_rights.SelectedCells[0].RowIndex;
+
+            DataGridViewRow selectedRow = drv_rights.Rows[selectedrowindex];
+            if (selectedRow != null && drv_rights.Rows[e.RowIndex].Cells[0].Value.ToString() != string.Empty)
+            {
+                tb_rights_name.Text = drv_rights.Rows[e.RowIndex].Cells[1].Value.ToString();
+                this.primaryKey = (int)(drv_rights.Rows[e.RowIndex].Cells[0].Value);
+
+            }
+        }
+        
+That is all.        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
