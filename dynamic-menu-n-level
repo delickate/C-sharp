@@ -1,0 +1,133 @@
+#SANI: Step 1: on window form load. call method for parent navigation
+       public frm_main()
+            {
+                InitializeComponent();
+                con = new Connection();
+
+                this.login_user_id = 0;
+
+                if (this.login_user_id > 0)
+                    {
+                       this.GetMenuData();
+                    }
+                    else {
+                                ctrl_login login_page = new ctrl_login();
+                                this.Controls.Add(login_page);
+                         }
+            }
+           
+#SANI: Step 2: Parent navigation coding, calling child navigation
+       public void GetMenuData()
+        {
+            try
+            {
+                if (this.con.mysqlCon != null && this.con.mysqlCon.State == ConnectionState.Open)
+                {
+                    this.con.mysqlCon.Close();
+                }
+
+                DataTable table = new DataTable();
+                string sql = "SELECT * FROM tbl_sections WHERE sec_parent_idfk = 0 AND sec_status = 1 AND sec_id IN (SELECT rsc_sec_idfk FROM tbl_role_sections WHERE rsc_role_idfk = " + this.login_user_id + ") ";
+                MySqlCommand cmd = new MySqlCommand(sql, this.con.mysqlCon);
+                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                da.Fill(table);
+
+                MenuStrip strip = new MenuStrip();
+                foreach (DataRow dr in table.Rows)
+                {
+                    ToolStripMenuItem menuItem = new ToolStripMenuItem("&" + dr["sec_name"].ToString());
+                    // menuItem.NavigateUrl = row["menu_url"].ToString();
+                    strip.Items.Add(menuItem);
+
+                    
+                    AddChildItems((int)dr["sec_id"], menuItem);
+                }
+
+                this.Controls.Add(strip);
+
+            }
+            catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        this.con.mysqlCon.Close();
+                    }
+        }
+        
+
+#SANI: Step 3: Recursive child level navigation
+       public void AddChildItems(int parentid, ToolStripMenuItem menuItem)
+        {
+            try
+            {
+                if (this.con.mysqlCon != null && this.con.mysqlCon.State == ConnectionState.Open)
+                {
+                    this.con.mysqlCon.Close();
+                }
+
+                DataTable table = new DataTable();
+                string sql = "SELECT * FROM tbl_sections WHERE sec_parent_idfk = "+ parentid + " AND sec_status = 1 AND sec_id IN (SELECT rsc_sec_idfk FROM tbl_role_sections WHERE rsc_role_idfk = " + this.login_user_id + ") ";
+                MySqlCommand cmd = new MySqlCommand(sql, this.con.mysqlCon);
+                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                da.Fill(table);
+
+                
+                foreach (DataRow dr in table.Rows)
+                {
+                    ToolStripMenuItem submenu = new ToolStripMenuItem(dr["sec_name"].ToString());
+                    submenu.Name = dr["sec_controller"].ToString();
+                    submenu.Tag = "parent ";
+                    submenu.Text = dr["sec_name"].ToString();
+                    submenu.Click += new EventHandler(menuClick);
+
+                    menuItem.DropDownItems.Add(submenu);
+                    this.AddChildItems((int)dr["sec_id"], submenu);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                this.con.mysqlCon.Close();
+            }
+        }
+        
+        
+#SANI: On Menu click. Open usercontrol/window form
+       public void menuClick(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+
+            Type t = Type.GetType("POS." + item.Name);
+            UserControl controlObj = (UserControl)Activator.CreateInstance(t);
+
+            //MessageBox.Show("Clicked " + item.Name);
+            this.Controls.Clear();
+            this.Controls.Add(controlObj);
+
+            this.GetMenuData();
+            //frm.Refresh();
+            //frm.Invalidate();
+            //frm.Show();
+
+        }
+        
+That's all.        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
