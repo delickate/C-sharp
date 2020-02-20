@@ -1,0 +1,373 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace SchoolManagementSystem
+{
+    public partial class DashboardForm : Form
+    {
+        private int childFormNumber = 0;
+
+        public DashboardForm()
+        {
+            InitializeComponent();
+        }
+
+        private void ShowNewForm(object sender, EventArgs e)
+        {
+            Form childForm = new Form();
+            childForm.MdiParent = this;
+            childForm.Text = "Window " + childFormNumber++;
+            childForm.Show();
+        }
+
+        private void OpenFile(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
+            if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                string FileName = openFileDialog.FileName;
+            }
+        }
+
+        private void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            saveFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
+            if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                string FileName = saveFileDialog.FileName;
+            }
+        }
+
+        private void ExitToolsStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void CutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void PasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void ToolBarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            toolStrip.Visible = toolBarToolStripMenuItem.Checked;
+        }
+
+        private void StatusBarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            statusStrip.Visible = statusBarToolStripMenuItem.Checked;
+        }
+
+        private void CascadeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.Cascade);
+        }
+
+        private void TileVerticalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.TileVertical);
+        }
+
+        private void TileHorizontalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.TileHorizontal);
+        }
+
+        private void ArrangeIconsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.ArrangeIcons);
+        }
+
+        private void CloseAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (Form childForm in MdiChildren)
+            {
+                childForm.Close();
+            }
+        }
+
+        private void DashboardForm_Load(object sender, EventArgs e)
+        {
+            //SANI: Disable Navigation menu
+            //this.menuStrip.Visible = false;
+            //this.toolStrip.Visible = false;
+
+            this.menuStrip.Dispose();
+            this.toolStrip.Dispose();
+
+            //SANI: Dynamic navigation
+            //int parentId = 0;
+            //int roleid = 1;
+
+            //this.GetMenuData(parentId, roleid);
+            //staticNavigation();
+
+
+            //SANI: Show login form
+            LoginForm loginFrm = new LoginForm(); //SANI: Create instance of login window form
+            loginFrm.MdiParent = this; //SANI: Make it child of mdi parent form
+            loginFrm.StartPosition = FormStartPosition.CenterScreen; //SANI: Align center to parent form
+
+            loginFrm.MinimizeBox = false; //SANI: Disable minimize option
+            loginFrm.MaximizeBox = false; //SANI: Disable maximize option
+            loginFrm.ControlBox = false;  //SANI: Disable close option
+
+            loginFrm.Show(); //SANI: Show login form
+            //this.LayoutMdi(MdiLayout.Cascade);
+            //loginFrm.Dock = DockStyle.Fill;
+
+            
+           
+            
+
+        }
+
+        //SANI: After form load
+        private void DashboardForm_Shown(object sender, EventArgs e)
+        {
+            //System.Threading.Thread.Sleep(5000);
+            //MessageBox.Show("waited....");
+            //this.menuStrip.Visible = false;
+        }
+
+
+        // SANI: Step 2: Parent navigation coding, calling child navigation
+        public void GetMenuData(int loggedInId, int roleId)
+        {
+            
+            try
+            {
+                
+                DataTable table = new DataTable();
+                table.Columns.Add("sec_id");
+                table.Columns.Add("sec_name");
+                table.Columns.Add("sec_controller");
+
+                using (EntityModelContext ctx = new EntityModelContext())
+                {
+
+                    
+                    var query = (from sections in ctx.tbl_sections
+                                 join rolsec in ctx.tbl_role_sections on sections.sec_id  equals rolsec.rsc_sec_idfk
+                                 where sections.sec_parent_idfk == 0
+                                 where sections.sec_status == 1
+                                 where rolsec.rsc_role_idfk == roleId
+                                 select new
+                                {
+                                    sections.sec_id,
+                                    sections.sec_name,
+                                    sections.sec_controller,
+                                }).ToList();
+
+                    //MessageBox.Show(query.Count().ToString());
+
+                    if (query != null)
+                    {
+                        
+                        DataRow drowItem;
+                        foreach (var item in query)
+                        {
+                            drowItem = table.NewRow();
+                            drowItem["sec_id"] = item.sec_id;
+                            drowItem["sec_name"] = item.sec_name;
+                            drowItem["sec_controller"] = item.sec_controller;
+                            table.Rows.Add(drowItem);
+                        }
+
+                    }else
+                    {
+                        MessageBox.Show("No record found.");
+                    }
+                }
+
+                
+
+
+                MenuStrip strip = new MenuStrip();
+                foreach (DataRow dr in table.Rows)
+                {
+                    ToolStripMenuItem menuItem = new ToolStripMenuItem("&" + dr["sec_name"].ToString());
+                    // menuItem.NavigateUrl = row["menu_url"].ToString();
+                    strip.Items.Add(menuItem);
+
+                     AddChildItems(int.Parse(dr["sec_id"].ToString()), menuItem, roleId);
+                    
+                }
+
+                this.Controls.Add(strip);
+
+            }catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+        }
+
+
+        public void AddChildItems(int parentid, ToolStripMenuItem menuItem, int roleId)
+        {
+            
+            try
+            {
+
+                DataTable table = new DataTable();
+                table.Columns.Add("sec_id");
+                table.Columns.Add("sec_name");
+                table.Columns.Add("sec_controller");
+
+                using (EntityModelContext ctx = new EntityModelContext())
+                {
+
+                    var query = (from sections in ctx.tbl_sections
+                                 join rolsec in ctx.tbl_role_sections on sections.sec_id equals rolsec.rsc_sec_idfk
+                                 where sections.sec_parent_idfk == parentid
+                                 where sections.sec_status == 1
+                                 where rolsec.rsc_role_idfk == roleId
+                                 select new
+                                 {
+                                     sections.sec_id,
+                                     sections.sec_name,
+                                     sections.sec_controller,
+                                 }).ToList();
+
+                    //MessageBox.Show(query.Count().ToString());
+
+                    if (query != null)
+                    {
+
+                        DataRow drowItem;
+                        foreach (var item in query)
+                        {
+                            drowItem = table.NewRow();
+                            drowItem["sec_id"] = item.sec_id;
+                            drowItem["sec_name"] = item.sec_name;
+                            drowItem["sec_controller"] = item.sec_controller;
+                            table.Rows.Add(drowItem);
+                        }
+
+                    }
+                    else
+                    {
+                        MessageBox.Show("No record found.");
+                    }
+
+                }
+
+                foreach (DataRow dr in table.Rows)
+                {
+                    ToolStripMenuItem submenu = new ToolStripMenuItem(dr["sec_name"].ToString());
+                    submenu.Name = dr["sec_controller"].ToString();
+                    submenu.Tag = "parent ";
+                    submenu.Text = dr["sec_name"].ToString();
+                    submenu.Click += new EventHandler(menuClick);
+
+                    menuItem.DropDownItems.Add(submenu);
+                    this.AddChildItems(int.Parse(dr["sec_id"].ToString()), submenu, roleId);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
+        }
+
+
+
+        public void menuClick(object sender, EventArgs e)
+        {
+            //SANI: Show window on click
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+
+            Type t = Type.GetType("SchoolManagementSystem." + item.Name);
+            Form controlObj = (Form)Activator.CreateInstance(t);
+
+            controlObj.MdiParent = this; //SANI: Make it child of mdi parent form
+            controlObj.StartPosition = FormStartPosition.CenterScreen; //SANI: Align center to parent form
+
+            controlObj.MinimizeBox = false; //SANI: Disable minimize option
+            controlObj.MaximizeBox = false; //SANI: Disable maximize option
+            //controlObj.ControlBox = false;  //SANI: Disable close option
+
+            controlObj.Show();
+
+            //MessageBox.Show("Clicked " + item.Name);
+
+            //SANI: Show user control on menu click
+            // ToolStripMenuItem item = sender as ToolStripMenuItem;
+
+            // Type t = Type.GetType("POS." + item.Name);
+            // UserControl controlObj = (UserControl)Activator.CreateInstance(t);
+
+            //MessageBox.Show("Clicked " + item.Name);
+            // this.Controls.Clear();
+            // this.Controls.Add(controlObj);
+
+            // this.GetMenuData();
+            //frm.Refresh();
+            //frm.Invalidate();
+            //frm.Show();
+
+        }
+
+
+        
+
+        public void staticNavigation()
+        {
+            ToolStripMenuItem[] parent_navigation = new ToolStripMenuItem[4];
+
+            for (int i = 0; i < 4; i++)
+            {
+                parent_navigation[i] = new ToolStripMenuItem("Menu " + (i + 1));
+                parent_navigation[i].Name = "Sani " + i.ToString();
+                parent_navigation[i].Tag = "box " + i.ToString();
+                parent_navigation[i].Text = "Hyne " + i.ToString();
+                // parent_navigation[i].Click += new EventHandler(MenuItemClickHandler);
+            }
+
+            MenuStrip navigation = new MenuStrip();
+            navigation.Items.AddRange(parent_navigation);
+
+
+            //////////// sub item
+            ToolStripMenuItem[] subitems = new ToolStripMenuItem[5];
+            for (int i = 0; i < 5; i++)
+            {
+                subitems[i] = new ToolStripMenuItem();
+                subitems[i].Name = "Sani " + i.ToString();
+                subitems[i].Tag = "Sani " + i.ToString();
+                subitems[i].Text = "Sani " + i.ToString();
+                //subitems[i].Click += new EventHandler(Sub_MenuItemClickHandler);
+            }
+
+            parent_navigation[0].DropDownItems.AddRange(subitems);
+            //////////////////////
+
+
+
+
+            //////////////////// SANI: END TOP NAVIGATION ////////////////////
+            this.Controls.Add(navigation);
+        }
+
+    }
+}
