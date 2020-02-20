@@ -1,0 +1,301 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace SchoolManagementSystem
+{
+    public partial class RightsForm : Form
+    {
+        public RightsForm()
+        {
+            InitializeComponent();
+        }
+
+        private void btn_save_Click(object sender, EventArgs e)
+        {
+            try
+            { 
+            var rights_name = tbx_rights_name.Text;
+
+            using (EntityModelContext context = new EntityModelContext())
+            {
+                Boolean is_exists = false;
+                var query = (from rights in context.tbl_rights
+                             select new
+                             {
+                                 rights.rit_name
+                             }).ToList();
+
+                if (query != null)
+                {
+
+                    foreach (var item in query)
+                    {
+                        if(item.rit_name == rights_name)
+                        {
+                            is_exists = true;
+                            MessageBox.Show("Already exists");
+                            break;
+                        }
+                    }
+
+                }
+
+                if(is_exists == false)
+                {
+                   var record = new tbl_rights()
+                                {
+                                   rit_name = rights_name
+                                };
+
+                   context.tbl_rights.Add(record);
+                   context.SaveChanges();
+
+                    this.load_gridviewData(); //SANI: Load dridview from dbcontext 
+
+                }
+
+            }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+
+        private void Previous_Click(object sender, EventArgs e)
+        {
+            try
+            { 
+            var rights_name = tbx_rights_name.Text;
+
+            using (EntityModelContext context = new EntityModelContext())
+            {
+                Boolean is_exists = false;
+                var query = (from rights in context.tbl_rights
+                             select new
+                             {
+                                 rights.rit_name
+                             }).ToList();
+
+                if (query != null)
+                {
+
+                    foreach (var item in query)
+                    {
+                        if (item.rit_name == rights_name)
+                        {
+                            is_exists = true;
+                            MessageBox.Show("Already exists");
+                            break;
+                        }
+                    }
+
+                }
+
+                if (is_exists == false)
+                {
+                    int rowindex = this.grv_rights.CurrentRow.Index;
+
+                    DataGridViewRow row = this.grv_rights.Rows[rowindex];
+                    var Id = int.Parse(row.Cells[0].Value.ToString());
+
+                    var Update = context.tbl_rights.SingleOrDefault(i => i.rit_id == Id);
+
+                    if (Update != null)
+                    {
+                        Update.rit_name = rights_name;
+
+                        context.Entry(Update).State = System.Data.Entity.EntityState.Modified;
+                        context.SaveChanges();
+
+                        this.load_gridviewData(); //SANI: Load dridview from dbcontext 
+                    }else
+                    {
+                        MessageBox.Show("Record not found.");
+                    }
+
+                }
+
+            }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+
+        private void btn_delete_Click(object sender, EventArgs e)
+        {
+            try
+            { 
+            using (EntityModelContext context = new EntityModelContext())
+            {
+                int rowindex = this.grv_rights.CurrentRow.Index;
+
+                DataGridViewRow row = this.grv_rights.Rows[rowindex];
+                var Id = int.Parse(row.Cells[0].Value.ToString());
+
+                var record = context.tbl_rights.SingleOrDefault(i => i.rit_id == Id);
+
+                if (record != null)
+                {
+                    context.tbl_rights.Remove(record);
+                    context.SaveChanges();
+
+                    this.load_gridviewData(); //SANI: Load dridview from dbcontext 
+                }
+                else
+                {
+                    MessageBox.Show("Record not found.");
+                }
+                
+            }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+
+        private void load_gridviewData()
+        {
+            try
+            { 
+            
+            using (EntityModelContext context = new EntityModelContext())
+            {
+                if (context.tbl_rights.Count() > 0)
+                {
+                    grv_rights.DataSource = (from r in context.tbl_rights select r).ToList();
+                    
+                }
+                
+            }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+
+        private void RightsForm_Load(object sender, EventArgs e)
+        {
+            try
+            { 
+            this.load_gridviewData(); //SANI: Load dridview from dbcontext
+
+            int rowindex = 0; //SANI: Assuming that there is first row exist
+            int totalrows = this.grv_rights.RowCount; //SANI: Get total record in gridview
+
+            if (totalrows > rowindex) //SANI: If there is any record exist
+            {
+                DataGridViewRow row = this.grv_rights.Rows[rowindex]; //SANI: Get first record of view
+                tbx_rights_name.Text = row.Cells[1].Value.ToString(); //SANI: Load first view record into textbox
+            }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void grv_rights_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            { 
+            if (e.RowIndex >= 0) //SANI: IF selected row has any record
+            {
+                DataGridViewRow row = this.grv_rights.Rows[e.RowIndex]; //SANI: Get record of select row
+                tbx_rights_name.Text = row.Cells[1].Value.ToString(); //SANI: Load selected data into textbox
+                
+            }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void btn_next_Click(object sender, EventArgs e)
+        {
+            try
+            { 
+            int rowindex = this.grv_rights.CurrentRow.Index; //SANI: Get index of selected row
+            int totalrows = this.grv_rights.RowCount-1; //SANI: Get total records of gridview
+            
+            if (rowindex == totalrows) //SANI: If next record index id higher than total record.
+            {
+               // MessageBox.Show("No more record found.");
+            }else
+            {
+                if (this.grv_rights.CurrentRow != null)
+                {
+                    this.grv_rights.CurrentCell =
+                        this.grv_rights
+                        .Rows[Math.Min(this.grv_rights.CurrentRow.Index + 1, this.grv_rights.Rows.Count - 1)]
+                        .Cells[this.grv_rights.CurrentCell.ColumnIndex];
+
+                    DataGridViewRow row = this.grv_rights.Rows[rowindex + 1];
+                    tbx_rights_name.Text = row.Cells[1].Value.ToString();
+                    //this.grv_rights.Rows[rowindex + 1].Selected = true; //Hilight next row
+                    //this.grv_rights.Rows[rowindex + 1].Cells[0].Selected = true; hilight next row's first column only
+                }
+           }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+
+        private void btn_previous_Click(object sender, EventArgs e)
+        {
+            try
+            { 
+            int rowindex = this.grv_rights.CurrentRow.Index; //SANI: Get index of selected row
+           
+            if (rowindex == 0) //SANI: If next record index id higher than total record.
+            {
+                // MessageBox.Show("No more record found.");
+            }
+            else
+            {
+                if (this.grv_rights.CurrentRow != null)
+                {
+                    this.grv_rights.CurrentCell =
+                        this.grv_rights
+                        .Rows[Math.Min(this.grv_rights.CurrentRow.Index - 1, this.grv_rights.Rows.Count - 1)]
+                        .Cells[this.grv_rights.CurrentCell.ColumnIndex];
+
+                    DataGridViewRow row = this.grv_rights.Rows[rowindex - 1];
+                    tbx_rights_name.Text = row.Cells[1].Value.ToString();
+                }
+            }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+    }
+}
